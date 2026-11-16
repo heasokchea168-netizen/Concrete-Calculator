@@ -13,7 +13,12 @@
             --text: #1e293b;
             --muted: #64748b;
             --border: #cbd5e1;
-            --success: #059669;
+            --success-bg: #f0fdf4;
+            --success-border: #bbf7d0;
+            --success-text: #166534;
+            --danger-bg: #fef2f2;
+            --danger-border: #fecaca;
+            --danger-text: #991b1b;
         }
         * {
             box-sizing: border-box;
@@ -69,7 +74,7 @@
         }
         label {
             display: block;
-            font-size: 0.85rem;
+            font-size: 0.84rem;
             font-weight: 600;
             margin-bottom: 5px;
             color: var(--text);
@@ -99,11 +104,13 @@
             color: #1e40af;
             padding: 8px 12px;
             border-radius: 8px;
-            font-size: 0.85rem;
+            font-size: 0.84rem;
             font-weight: 600;
             margin-top: 6px;
             display: flex;
             justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 6px;
         }
         .result-box {
             background: linear-gradient(135deg, #1e3a8a, #2563eb);
@@ -145,18 +152,43 @@
             font-size: 0.95rem;
             margin-top: 2px;
         }
+        .calc-summary {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+        .calc-row:last-child {
+            border-bottom: none;
+        }
         .status-box {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            color: #166534;
+            background: var(--success-bg);
+            border: 1px solid var(--success-border);
+            color: var(--success-text);
             padding: 12px;
             border-radius: 8px;
-            font-size: 0.88rem;
+            font-size: 0.86rem;
             margin-top: 10px;
+        }
+        .status-box.fail {
+            background: var(--danger-bg);
+            border-color: var(--danger-border);
+            color: var(--danger-text);
         }
         .status-box p {
             font-weight: 700;
             margin-bottom: 4px;
+        }
+        .status-box p:last-child {
+            margin-bottom: 0;
         }
         .btn-reset {
             width: 100%;
@@ -168,7 +200,11 @@
             font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 4px;
+            margin-bottom: 20px;
+        }
+        .btn-reset:active {
+            background: #cbd5e1;
         }
         .hidden {
             display: none;
@@ -180,7 +216,7 @@
 <div class="container">
     <header>
         <h1>Concrete & Plywood Calculator</h1>
-        <p>Pressure, I, Z & Bending/Deflection Check</p>
+        <p>Lateral Pressure, I, Z, Bending & Deflection Check</p>
     </header>
 
     <!-- Results Card -->
@@ -195,8 +231,8 @@
                 <strong id="res_R">6.86 m/hr</strong>
             </div>
             <div class="res-item">
-                <span>Plywood Z</span>
-                <strong id="res_Z">99.2 mm³/mm</strong>
+                <span>Plywood Z (NA)</span>
+                <strong id="res_Z">99.20 mm³</strong>
             </div>
         </div>
     </div>
@@ -262,180 +298,4 @@
             </div>
             <div class="form-group">
                 <label for="h_height">Concrete Height h (m)</label>
-                <input type="number" id="h_height" value="3.0" step="0.1" inputmode="decimal" oninput="calculate()">
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label for="rho">Concrete Density ρ (kg/m³)</label>
-            <input type="number" id="rho" value="2400" step="10" inputmode="decimal" oninput="calculate()">
-        </div>
-    </div>
-
-    <!-- Part 2: Plywood I & Z Calculation & Bending Check -->
-    <div class="card">
-        <div class="section-title">2. Plywood Layers, I & Z Calculation</div>
-        
-        <div class="row-2">
-            <div class="form-group">
-                <label for="d1">Layer d₁ (mm) [Veneer]</label>
-                <input type="number" id="d1" value="5.0" step="0.1" inputmode="decimal" oninput="calculate()">
-            </div>
-            <div class="form-group">
-                <label for="d2">Layer d₂ (mm) [Cross band]</label>
-                <input type="number" id="d2" value="3.2" step="0.1" inputmode="decimal" oninput="calculate()">
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label for="d3">Layer d₃ (mm) [Center core]</label>
-            <input type="number" id="d3" value="3.7" step="0.1" inputmode="decimal" oninput="calculate()">
-        </div>
-
-        <div class="badge-info">
-            <span>I = <span id="res_I">595.00</span> mm⁴/mm</span>
-            <span>Z = <span id="res_Z_badge">99.20</span> mm³/mm</span>
-        </div>
-
-        <div class="form-group" style="margin-top: 12px;">
-            <label for="ply_span">Stud Spacing / Span L (m)</label>
-            <input type="number" id="ply_span" value="0.3" step="0.01" inputmode="decimal" oninput="calculate()">
-        </div>
-
-        <div class="row-2">
-            <div class="form-group">
-                <label for="ply_Fb">Allowable Stress F_b (MPa)</label>
-                <input type="number" id="ply_Fb" value="14.0" step="0.1" inputmode="decimal" oninput="calculate()">
-            </div>
-            <div class="form-group">
-                <label for="ply_E">Modulus E (MPa)</label>
-                <input type="number" id="ply_E" value="12000" step="100" inputmode="decimal" oninput="calculate()">
-            </div>
-        </div>
-
-        <div class="status-box" id="ply_status">
-            <p><strong>Bending Check:</strong> <span id="res_bending_check">M_allowable > M_max (ok!)</span></p>
-            <p><strong>Deflection Check:</strong> <span id="res_def_check">Δ_allowable >= Δ_max (ok!)</span></p>
-        </div>
-    </div>
-
-    <button class="btn-reset" onclick="resetDefaults()">Reset to Book Example</button>
-</div>
-
-<script>
-    function handleC2Change() {
-        const select = document.getElementById('c2_select').value;
-        const customGroup = document.getElementById('custom_c2_group');
-        if (select === 'custom') {
-            customGroup.classList.remove('hidden');
-        } else {
-            customGroup.classList.add('hidden');
-        }
-        calculate();
-    }
-
-    function calculate() {
-        // Concrete inputs
-        const T = parseFloat(document.getElementById('temp').value) || 0;
-        const Q = parseFloat(document.getElementById('q_flow').value) || 0;
-        const L = parseFloat(document.getElementById('length').value) || 0;
-        const W = parseFloat(document.getElementById('width').value) || 0;
-        const C1 = parseFloat(document.getElementById('c1_select').value) || 1.0;
-        
-        const c2Select = document.getElementById('c2_select').value;
-        const C2 = c2Select === 'custom' 
-            ? (parseFloat(document.getElementById('c2_custom').value) || 0) 
-            : parseFloat(c2Select);
-
-        const H = parseFloat(document.getElementById('H_height').value) || 0;
-        const h = parseFloat(document.getElementById('h_height').value) || 0;
-        const rho = parseFloat(document.getElementById('rho').value) || 0;
-
-        // Plywood layer inputs for I and Z
-        const d1 = parseFloat(document.getElementById('d1').value) || 0;
-        const d2 = parseFloat(document.getElementById('d2').value) || 0;
-        const d3 = parseFloat(document.getElementById('d3').value) || 0;
-
-        // Plywood structural inputs
-        const span_L = parseFloat(document.getElementById('ply_span').value) || 0; // m
-        const Fb = parseFloat(document.getElementById('ply_Fb').value) || 0; // MPa
-        const E = parseFloat(document.getElementById('ply_E').value) || 0; // MPa
-
-        // Calculations for Concrete Pressure
-        const K = Math.pow(36 / (T + 16), 2);
-        const area = L * W;
-        const R = area > 0 ? (Q / area) : 0;
-
-        const term1 = C1 * Math.sqrt(R);
-        const diff = Math.max(0, H - term1);
-        const term2 = C2 * K * Math.sqrt(diff);
-        const p_max = (rho / 100) * (term1 + term2);
-
-        // Calculations for Plywood I and Z based on exact formula from image:
-        // y1 center of d1 layer from NA: 
-        // y1_bar = d3/2 + d2 + d1/2 (as per example: 3.7/2 + 3.2 + 5.0/2 = 1.85 + 3.2 + 2.5 = 7.55 mm)
-        const y1_bar = (d3 / 2.0) + d2 + (d1 / 2.0);
-        
-        // I(NA) = 2 * ( (1/12)*b*d1^3 + A1*y1_bar^2 ) + (1/12)*b*d3^3  (with b = 1.0 mm)
-        const I_na = 2.0 * ((1.0 / 12.0) * Math.pow(d1, 3) + d1 * Math.pow(y1_bar, 2)) + (1.0 / 12.0) * Math.pow(d3, 3);
-        
-        // Total thickness t = 2*d1 + 2*d2 + d3, extreme fiber y_max = t / 2
-        const total_t = 2.0 * d1 + 2.0 * d2 + d3;
-        const y_extreme = total_t / 2.0;
-        
-        // Z = I_na / y_extreme (in the example: 595.0 / 6 = 99.2)
-        const Z = y_extreme > 0 ? (I_na / y_extreme) : 0;
-
-        // Plywood Moment and Deflection check
-        const span_mm = span_L * 1000;
-        const M_max = p_max * Math.pow(span_L, 2) / 10; // kNm
-        const M_allowable = 0.65 * 1.0 * Fb * Z / 1000; // kNm
-
-        const delta_max = (p_max * 1000 * Math.pow(span_L, 4)) / (185 * E * I_na);
-        const delta_allowable = span_mm / 300;
-
-        // Update UI
-        document.getElementById('badge_area').innerText = area.toFixed(2);
-        document.getElementById('badge_R').innerText = R.toFixed(2);
-        document.getElementById('res_pmax').innerText = p_max.toFixed(2) + ' kPa';
-        document.getElementById('res_R').innerText = R.toFixed(2) + ' m/hr';
-        document.getElementById('res_Z').innerText = Z.toFixed(1) + ' mm³/mm';
-        document.getElementById('res_I').innerText = I_na.toFixed(2);
-        document.getElementById('res_Z_badge').innerText = Z.toFixed(2);
-
-        // Bending check text
-        const bendingOk = M_allowable >= M_max;
-        document.getElementById('res_bending_check').innerText = 
-            `M_allowable (${M_allowable.toFixed(3)} kNm) ${bendingOk ? '>=' : '<'} M_max (${M_max.toFixed(3)} kNm) -> ${bendingOk ? '(ok!)' : '(Failed)'}`;
-
-        // Deflection check text
-        const defOk = delta_allowable >= delta_max;
-        document.getElementById('res_def_check').innerText = 
-            `Δ_allowable (${delta_allowable.toFixed(1)} mm) ${defOk ? '>=' : '<'} Δ_max (${delta_max.toFixed(2)} mm) -> ${defOk ? '(ok!)' : '(Failed)'}`;
-    }
-
-    function resetDefaults() {
-        document.getElementById('temp').value = 20;
-        document.getElementById('q_flow').value = 24.0;
-        document.getElementById('length').value = 0.25;
-        document.getElementById('width').value = 14.0;
-        document.getElementById('c1_select').value = "1.0";
-        document.getElementById('c2_select').value = "0.60";
-        document.getElementById('custom_c2_group').classList.add('hidden');
-        document.getElementById('H_height').value = 5.0;
-        document.getElementById('h_height').value = 3.0;
-        document.getElementById('rho').value = 2400;
-        document.getElementById('d1').value = 5.0;
-        document.getElementById('d2').value = 3.2;
-        document.getElementById('d3').value = 3.7;
-        document.getElementById('ply_span').value = 0.3;
-        document.getElementById('ply_Fb').value = 14.0;
-        document.getElementById('ply_E').value = 12000;
-        calculate();
-    }
-
-    calculate();
-</script>
-
-</body>
-</html>
+                <input type="number" id="h_height" value="3.0
