@@ -298,4 +298,259 @@
             </div>
             <div class="form-group">
                 <label for="h_height">Concrete Height h (m)</label>
-                <input type="number" id="h_height" value="3.0
+                <input type="number" id="h_height" value="3.0" step="0.1" inputmode="decimal" oninput="calculate()">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="rho">Concrete Density ρ (kg/m³)</label>
+            <input type="number" id="rho" value="2400" step="10" inputmode="decimal" oninput="calculate()">
+        </div>
+    </div>
+
+    <!-- Part 2: Plywood I & Z Calculation & Bending Check -->
+    <div class="card">
+        <div class="section-title">2. Plywood Layers, Width (b), I & Z</div>
+        
+        <div class="row-2">
+            <div class="form-group">
+                <label for="ply_b">Strip Width b (mm)</label>
+                <input type="number" id="ply_b" value="1.0" step="0.1" inputmode="decimal" oninput="calculate()">
+            </div>
+            <div class="form-group">
+                <label for="d1">Layer d₁ (mm) [Outer]</label>
+                <input type="number" id="d1" value="5.0" step="0.1" inputmode="decimal" oninput="calculate()">
+            </div>
+        </div>
+
+        <div class="row-2">
+            <div class="form-group">
+                <label for="d2">Layer d₂ (mm) [Cross]</label>
+                <input type="number" id="d2" value="3.2" step="0.1" inputmode="decimal" oninput="calculate()">
+            </div>
+            <div class="form-group">
+                <label for="d3">Layer d₃ (mm) [Core]</label>
+                <input type="number" id="d3" value="3.7" step="0.1" inputmode="decimal" oninput="calculate()">
+            </div>
+        </div>
+
+        <div class="badge-info">
+            <span>t = <span id="res_t">20.1</span> mm</span>
+            <span>I = <span id="res_I">595.02</span> mm⁴</span>
+            <span>Z = <span id="res_Z_badge">99.17</span> mm³</span>
+        </div>
+
+        <div class="section-title" style="margin-top: 16px;">3. Bending (M<sub>allowable</sub>) & Deflection (Δ<sub>allowable</sub>)</div>
+
+        <div class="form-group">
+            <label for="ply_span">Stud Spacing / Span L (m)</label>
+            <input type="number" id="ply_span" value="0.3" step="0.01" inputmode="decimal" oninput="calculate()">
+        </div>
+
+        <div class="row-2">
+            <div class="form-group">
+                <label for="ply_Fb">Allowable Stress F<sub>b</sub> (MPa)</label>
+                <input type="number" id="ply_Fb" value="14.0" step="0.1" inputmode="decimal" oninput="calculate()">
+            </div>
+            <div class="form-group">
+                <label for="ply_E">Modulus E (MPa)</label>
+                <input type="number" id="ply_E" value="12000" step="100" inputmode="decimal" oninput="calculate()">
+            </div>
+        </div>
+
+        <div class="row-2">
+            <div class="form-group">
+                <label for="ply_k1">Factor k₁ (Duration)</label>
+                <input type="number" id="ply_k1" value="0.65" step="0.05" inputmode="decimal" oninput="calculate()">
+            </div>
+            <div class="form-group">
+                <label for="ply_g19">Factor g₁₉ (Moisture/Load)</label>
+                <input type="number" id="ply_g19" value="1.0" step="0.05" inputmode="decimal" oninput="calculate()">
+            </div>
+        </div>
+
+        <!-- Detailed Values Display -->
+        <div class="calc-summary">
+            <div class="calc-row">
+                <span>M<sub>max</sub> = P<sub>max</sub>·L² / 10</span>
+                <strong id="val_M_max">0.766 kNm</strong>
+            </div>
+            <div class="calc-row">
+                <span>M<sub>allowable</sub> = k₁·g₁₉·F<sub>b</sub>·Z</span>
+                <strong id="val_M_allow">0.902 kNm</strong>
+            </div>
+            <div class="calc-row">
+                <span>Δ<sub>max</sub> = P<sub>max</sub>·L⁴ / (185·E·I)</span>
+                <strong id="val_d_max">0.12 mm</strong>
+            </div>
+            <div class="calc-row">
+                <span>Δ<sub>allowable</sub> = Span / 300</span>
+                <strong id="val_d_allow">1.00 mm</strong>
+            </div>
+        </div>
+
+        <div class="status-box" id="ply_status">
+            <p id="res_bending_check">Bending: M_allowable (0.902 kNm) >= M_max (0.766 kNm) -> (ok!)</p>
+            <p id="res_def_check">Deflection: Δ_allowable (1.00 mm) >= Δ_max (0.12 mm) -> (ok!)</p>
+        </div>
+    </div>
+
+    <button class="btn-reset" onclick="resetDefaults()">Reset to Book Example</button>
+</div>
+
+<script>
+    function handleC2Change() {
+        const select = document.getElementById('c2_select').value;
+        const customGroup = document.getElementById('custom_c2_group');
+        if (select === 'custom') {
+            customGroup.classList.remove('hidden');
+        } else {
+            customGroup.classList.add('hidden');
+        }
+        calculate();
+    }
+
+    function calculate() {
+        // 1. Concrete inputs
+        const T = parseFloat(document.getElementById('temp').value) || 0;
+        const Q = parseFloat(document.getElementById('q_flow').value) || 0;
+        const L = parseFloat(document.getElementById('length').value) || 0;
+        const W = parseFloat(document.getElementById('width').value) || 0;
+        const C1 = parseFloat(document.getElementById('c1_select').value) || 1.0;
+        
+        const c2Select = document.getElementById('c2_select').value;
+        const C2 = c2Select === 'custom' 
+            ? (parseFloat(document.getElementById('c2_custom').value) || 0) 
+            : parseFloat(c2Select);
+
+        const H = parseFloat(document.getElementById('H_height').value) || 0;
+        const h = parseFloat(document.getElementById('h_height').value) || 0;
+        const rho = parseFloat(document.getElementById('rho').value) || 0;
+
+        // 2. Plywood layer & width inputs
+        const b = parseFloat(document.getElementById('ply_b').value) || 1.0; // mm
+        const d1 = parseFloat(document.getElementById('d1').value) || 0;
+        const d2 = parseFloat(document.getElementById('d2').value) || 0;
+        const d3 = parseFloat(document.getElementById('d3').value) || 0;
+
+        // 3. Plywood structural inputs
+        const span_L = parseFloat(document.getElementById('ply_span').value) || 0; // m
+        const Fb = parseFloat(document.getElementById('ply_Fb').value) || 0; // MPa
+        const E = parseFloat(document.getElementById('ply_E').value) || 0; // MPa
+        const k1 = parseFloat(document.getElementById('ply_k1').value) || 0.65;
+        const g19 = parseFloat(document.getElementById('ply_g19').value) || 1.0;
+
+        // Concrete Pressure Calculations
+        const K = Math.pow(36 / (T + 16), 2);
+        const area = L * W;
+        const R = area > 0 ? (Q / area) : 0;
+
+        const term1 = C1 * Math.sqrt(R);
+        const diff = Math.max(0, H - term1);
+        const term2 = C2 * K * Math.sqrt(diff);
+        const p_max = (rho / 100) * (term1 + term2); // kPa (kN/m²)
+
+        // Plywood I and Z Calculations (with width b)
+        // y1_bar = distance from neutral axis to center of outer layer d1
+        const y1_bar = (d3 / 2.0) + d2 + (d1 / 2.0);
+        const A1 = d1 * b;
+        
+        // I(NA) = 2 * ((1/12)*b*d1^3 + A1 * y1_bar^2) + (1/12)*b*d3^3
+        const I_na = 2.0 * ((1.0 / 12.0) * b * Math.pow(d1, 3) + A1 * Math.pow(y1_bar, 2)) + (1.0 / 12.0) * b * Math.pow(d3, 3);
+        
+        // Total thickness & extreme fiber y1
+        const total_t = 2.0 * d1 + 2.0 * d2 + d3;
+        // Note: In book example t = 20.1mm -> y1 = 10.0mm (or total_t/2). Using total_t / 2 for general layers:
+        const y_extreme = total_t / 2.0;
+        const Z = y_extreme > 0 ? (I_na / y_extreme) : 0;
+
+        // Bending Moment Calculations
+        // Line load w = P_max (kN/m²) * b (m) = P_max * (b / 1000) kN/m
+        // Note: In book example, b = 1.0 mm is treated as per-meter strip for M_max = P_max * L^2 / 10 (kNm/m)
+        // and M_allowable = k1 * g19 * Fb * Z(per mm) in N·m/m -> divided by 1000 for kNm/m.
+        // If user changes b (e.g., b = 1.0 mm per-unit width vs b = 1000 mm), let's scale consistently:
+        const width_factor = (b === 1.0) ? 1.0 : (b / 1000.0);
+        const M_max = (p_max * width_factor * Math.pow(span_L, 2)) / 10.0; // kNm
+        
+        // If b = 1.0 mm, Z is in mm³/mm, so k1*g19*Fb*Z gives N·mm/mm = N·m/m -> /1000 = kNm/m.
+        // If b != 1.0 mm, Z is total mm³ for width b, so k1*g19*Fb*Z gives N·mm -> /1,000,000 = kNm.
+        const M_allowable = (b === 1.0)
+            ? (k1 * g19 * Fb * Z) / 1000.0
+            : (k1 * g19 * Fb * Z) / 1000000.0;
+
+        // Deflection Calculations (in mm)
+        // P_max in kPa = 10^-3 N/mm². Load per mm width = P_max * 10^-3 N/mm.
+        // If b = 1.0 mm, w = P_max * 10^-3 N/mm, I = I_na (mm⁴/mm).
+        // If b != 1.0 mm, w = P_max * 10^-3 * b N/mm, I = I_na (mm⁴).
+        // Formula: Delta_max = (w * L_mm^4) / (185 * E * I)
+        const span_mm = span_L * 1000.0;
+        const w_N_per_mm = (p_max * 1e-3) * b;
+        const delta_max = (E > 0 && I_na > 0) 
+            ? (w_N_per_mm * Math.pow(span_mm, 4)) / (185.0 * E * I_na) 
+            : 0;
+        const delta_allowable = span_mm / 300.0;
+
+        // Update UI
+        document.getElementById('badge_area').innerText = area.toFixed(2);
+        document.getElementById('badge_R').innerText = R.toFixed(2);
+        document.getElementById('res_pmax').innerText = p_max.toFixed(2) + ' kPa';
+        document.getElementById('res_R').innerText = R.toFixed(2) + ' m/hr';
+        document.getElementById('res_Z').innerText = Z.toFixed(2) + (b === 1.0 ? ' mm³/mm' : ' mm³');
+        
+        document.getElementById('res_t').innerText = total_t.toFixed(1);
+        document.getElementById('res_I').innerText = I_na.toFixed(2);
+        document.getElementById('res_Z_badge').innerText = Z.toFixed(2);
+
+        document.getElementById('val_M_max').innerText = M_max.toFixed(3) + ' kNm';
+        document.getElementById('val_M_allow').innerText = M_allowable.toFixed(3) + ' kNm';
+        document.getElementById('val_d_max').innerText = delta_max.toFixed(2) + ' mm';
+        document.getElementById('val_d_allow').innerText = delta_allowable.toFixed(2) + ' mm';
+
+        // Check Status
+        const bendingOk = M_allowable >= M_max;
+        const defOk = delta_allowable >= delta_max;
+
+        document.getElementById('res_bending_check').innerText = 
+            `Bending: M_allowable (${M_allowable.toFixed(3)} kNm) ${bendingOk ? '>=' : '<'} M_max (${M_max.toFixed(3)} kNm) -> ${bendingOk ? '(ok!)' : '(NOT OK!)'}`;
+
+        document.getElementById('res_def_check').innerText = 
+            `Deflection: Δ_allowable (${delta_allowable.toFixed(2)} mm) ${defOk ? '>=' : '<'} Δ_max (${delta_max.toFixed(2)} mm) -> ${defOk ? '(ok!)' : '(NOT OK!)'}`;
+
+        const statusBox = document.getElementById('ply_status');
+        if (bendingOk && defOk) {
+            statusBox.classList.remove('fail');
+        } else {
+            statusBox.classList.add('fail');
+        }
+    }
+
+    function resetDefaults() {
+        document.getElementById('temp').value = 20;
+        document.getElementById('q_flow').value = 24.0;
+        document.getElementById('length').value = 0.25;
+        document.getElementById('width').value = 14.0;
+        document.getElementById('c1_select').value = "1.0";
+        document.getElementById('c2_select').value = "0.60";
+        document.getElementById('custom_c2_group').classList.add('hidden');
+        document.getElementById('H_height').value = 5.0;
+        document.getElementById('h_height').value = 3.0;
+        document.getElementById('rho').value = 2400;
+        
+        document.getElementById('ply_b').value = 1.0;
+        document.getElementById('d1').value = 5.0;
+        document.getElementById('d2').value = 3.2;
+        document.getElementById('d3').value = 3.7;
+        
+        document.getElementById('ply_span').value = 0.3;
+        document.getElementById('ply_Fb').value = 14.0;
+        document.getElementById('ply_E').value = 12000;
+        document.getElementById('ply_k1').value = 0.65;
+        document.getElementById('ply_g19').value = 1.0;
+        calculate();
+    }
+
+    calculate();
+</script>
+
+</body>
+</html>
