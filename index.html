@@ -163,7 +163,7 @@
         .calc-row {
             display: flex;
             justify-content: space-between;
-            padding: 4px 0;
+            padding: 5px 0;
             border-bottom: 1px dashed #e2e8f0;
         }
         .calc-row:last-child {
@@ -203,9 +203,6 @@
             margin-top: 4px;
             margin-bottom: 20px;
         }
-        .btn-reset:active {
-            background: #cbd5e1;
-        }
         .hidden {
             display: none;
         }
@@ -232,7 +229,7 @@
             </div>
             <div class="res-item">
                 <span>Plywood Z (NA)</span>
-                <strong id="res_Z">99.20 mm³</strong>
+                <strong id="res_Z">59.21 mm³/mm</strong>
             </div>
         </div>
     </div>
@@ -308,9 +305,17 @@
         </div>
     </div>
 
-    <!-- Part 2: Plywood I & Z Calculation & Bending Check -->
+    <!-- Part 2: Plywood I & Z Calculation -->
     <div class="card">
-        <div class="section-title">2. Plywood Layers, Width (b), I & Z</div>
+        <div class="section-title">2. Plywood Cross-Section, I & Z</div>
+
+        <div class="form-group">
+            <label for="z_mode">Calculation Formula Mode for Z</label>
+            <select id="z_mode" onchange="calculate()">
+                <option value="standard" selected>Standard Engineering (Z = I / y_max, where y_max = t/2)</option>
+                <option value="book">Textbook Typo Mode (Z = I / 6.0)</option>
+            </select>
+        </div>
         
         <div class="row-2">
             <div class="form-group">
@@ -318,33 +323,38 @@
                 <input type="number" id="ply_b" value="1.0" step="0.1" inputmode="decimal" oninput="calculate()">
             </div>
             <div class="form-group">
-                <label for="d1">Layer d₁ (mm) [Outer]</label>
+                <label for="d1">Outer Veneer d₁ (mm)</label>
                 <input type="number" id="d1" value="5.0" step="0.1" inputmode="decimal" oninput="calculate()">
             </div>
         </div>
 
         <div class="row-2">
             <div class="form-group">
-                <label for="d2">Layer d₂ (mm) [Cross]</label>
+                <label for="d2">Cross Layer d₂ (mm)</label>
                 <input type="number" id="d2" value="3.2" step="0.1" inputmode="decimal" oninput="calculate()">
             </div>
             <div class="form-group">
-                <label for="d3">Layer d₃ (mm) [Core]</label>
+                <label for="d3">Center Core d₃ (mm)</label>
                 <input type="number" id="d3" value="3.7" step="0.1" inputmode="decimal" oninput="calculate()">
             </div>
         </div>
 
         <div class="badge-info">
             <span>t = <span id="res_t">20.1</span> mm</span>
-            <span>I = <span id="res_I">595.02</span> mm⁴</span>
-            <span>Z = <span id="res_Z_badge">99.17</span> mm³</span>
+            <span>I = <span id="res_I">595.02</span> mm⁴/mm</span>
+            <span>Z = <span id="res_Z_badge">59.21</span> mm³/mm</span>
         </div>
 
-        <div class="section-title" style="margin-top: 16px;">3. Bending (M<sub>allowable</sub>) & Deflection (Δ<sub>allowable</sub>)</div>
+        <div class="section-title" style="margin-top: 16px;">3. Plywood Grade, Bending & Deflection</div>
 
         <div class="form-group">
-            <label for="ply_span">Stud Spacing / Span L (m)</label>
-            <input type="number" id="ply_span" value="0.3" step="0.01" inputmode="decimal" oninput="calculate()">
+            <label for="ply_grade">Plywood Stress Grade (Standard Table)</label>
+            <select id="ply_grade" onchange="handleGradeChange()">
+                <option value="14.0,12000" selected>Formply F14 (Fb = 14.0 MPa, E = 12000 MPa)</option>
+                <option value="11.0,10500">Formply F11 (Fb = 11.0 MPa, E = 10500 MPa)</option>
+                <option value="17.0,14000">Formply F17 (Fb = 17.0 MPa, E = 14000 MPa)</option>
+                <option value="custom">Custom Fb & E Values...</option>
+            </select>
         </div>
 
         <div class="row-2">
@@ -356,6 +366,11 @@
                 <label for="ply_E">Modulus E (MPa)</label>
                 <input type="number" id="ply_E" value="12000" step="100" inputmode="decimal" oninput="calculate()">
             </div>
+        </div>
+
+        <div class="form-group">
+            <label for="ply_span">Stud Spacing / Span L (m)</label>
+            <input type="number" id="ply_span" value="0.3" step="0.01" inputmode="decimal" oninput="calculate()">
         </div>
 
         <div class="row-2">
@@ -377,7 +392,7 @@
             </div>
             <div class="calc-row">
                 <span>M<sub>allowable</sub> = k₁·g₁₉·F<sub>b</sub>·Z</span>
-                <strong id="val_M_allow">0.902 kNm</strong>
+                <strong id="val_M_allow">0.539 kNm</strong>
             </div>
             <div class="calc-row">
                 <span>Δ<sub>max</sub> = P<sub>max</sub>·L⁴ / (185·E·I)</span>
@@ -390,7 +405,7 @@
         </div>
 
         <div class="status-box" id="ply_status">
-            <p id="res_bending_check">Bending: M_allowable (0.902 kNm) >= M_max (0.766 kNm) -> (ok!)</p>
+            <p id="res_bending_check">Bending: M_allowable (0.539 kNm) < M_max (0.766 kNm) -> (NOT OK!)</p>
             <p id="res_def_check">Deflection: Δ_allowable (1.00 mm) >= Δ_max (0.12 mm) -> (ok!)</p>
         </div>
     </div>
@@ -406,6 +421,16 @@
             customGroup.classList.remove('hidden');
         } else {
             customGroup.classList.add('hidden');
+        }
+        calculate();
+    }
+
+    function handleGradeChange() {
+        const val = document.getElementById('ply_grade').value;
+        if (val !== 'custom') {
+            const parts = val.split(',');
+            document.getElementById('ply_Fb').value = parts[0];
+            document.getElementById('ply_E').value = parts[1];
         }
         calculate();
     }
@@ -428,6 +453,7 @@
         const rho = parseFloat(document.getElementById('rho').value) || 0;
 
         // 2. Plywood layer & width inputs
+        const zMode = document.getElementById('z_mode').value;
         const b = parseFloat(document.getElementById('ply_b').value) || 1.0; // mm
         const d1 = parseFloat(document.getElementById('d1').value) || 0;
         const d2 = parseFloat(document.getElementById('d2').value) || 0;
@@ -450,43 +476,30 @@
         const term2 = C2 * K * Math.sqrt(diff);
         const p_max = (rho / 100) * (term1 + term2); // kPa (kN/m²)
 
-        // Plywood I and Z Calculations (with width b)
-        // y1_bar = distance from neutral axis to center of outer layer d1
+        // Plywood I and Z Calculations
         const y1_bar = (d3 / 2.0) + d2 + (d1 / 2.0);
         const A1 = d1 * b;
         
         // I(NA) = 2 * ((1/12)*b*d1^3 + A1 * y1_bar^2) + (1/12)*b*d3^3
         const I_na = 2.0 * ((1.0 / 12.0) * b * Math.pow(d1, 3) + A1 * Math.pow(y1_bar, 2)) + (1.0 / 12.0) * b * Math.pow(d3, 3);
         
-        // Total thickness & extreme fiber y1
         const total_t = 2.0 * d1 + 2.0 * d2 + d3;
-        // Note: In book example t = 20.1mm -> y1 = 10.0mm (or total_t/2). Using total_t / 2 for general layers:
-        const y_extreme = total_t / 2.0;
-        const Z = y_extreme > 0 ? (I_na / y_extreme) : 0;
+        const y_divisor = (zMode === 'book') ? 6.0 : (total_t / 2.0);
+        const Z = y_divisor > 0 ? (I_na / y_divisor) : 0;
 
         // Bending Moment Calculations
-        // Line load w = P_max (kN/m²) * b (m) = P_max * (b / 1000) kN/m
-        // Note: In book example, b = 1.0 mm is treated as per-meter strip for M_max = P_max * L^2 / 10 (kNm/m)
-        // and M_allowable = k1 * g19 * Fb * Z(per mm) in N·m/m -> divided by 1000 for kNm/m.
-        // If user changes b (e.g., b = 1.0 mm per-unit width vs b = 1000 mm), let's scale consistently:
         const width_factor = (b === 1.0) ? 1.0 : (b / 1000.0);
         const M_max = (p_max * width_factor * Math.pow(span_L, 2)) / 10.0; // kNm
         
-        // If b = 1.0 mm, Z is in mm³/mm, so k1*g19*Fb*Z gives N·mm/mm = N·m/m -> /1000 = kNm/m.
-        // If b != 1.0 mm, Z is total mm³ for width b, so k1*g19*Fb*Z gives N·mm -> /1,000,000 = kNm.
         const M_allowable = (b === 1.0)
             ? (k1 * g19 * Fb * Z) / 1000.0
             : (k1 * g19 * Fb * Z) / 1000000.0;
 
         // Deflection Calculations (in mm)
-        // P_max in kPa = 10^-3 N/mm². Load per mm width = P_max * 10^-3 N/mm.
-        // If b = 1.0 mm, w = P_max * 10^-3 N/mm, I = I_na (mm⁴/mm).
-        // If b != 1.0 mm, w = P_max * 10^-3 * b N/mm, I = I_na (mm⁴).
-        // Formula: Delta_max = (w * L_mm^4) / (185 * E * I)
         const span_mm = span_L * 1000.0;
-        const w_N_per_mm = (p_max * 1e-3) * b;
+        const load_N_mm = (p_max * 1e-3) * b;
         const delta_max = (E > 0 && I_na > 0) 
-            ? (w_N_per_mm * Math.pow(span_mm, 4)) / (185.0 * E * I_na) 
+            ? (load_N_mm * Math.pow(span_mm, 4)) / (185.0 * E * I_na) 
             : 0;
         const delta_allowable = span_mm / 300.0;
 
@@ -536,14 +549,16 @@
         document.getElementById('h_height').value = 3.0;
         document.getElementById('rho').value = 2400;
         
+        document.getElementById('z_mode').value = "standard";
         document.getElementById('ply_b').value = 1.0;
         document.getElementById('d1').value = 5.0;
         document.getElementById('d2').value = 3.2;
         document.getElementById('d3').value = 3.7;
         
-        document.getElementById('ply_span').value = 0.3;
+        document.getElementById('ply_grade').value = "14.0,12000";
         document.getElementById('ply_Fb').value = 14.0;
         document.getElementById('ply_E').value = 12000;
+        document.getElementById('ply_span').value = 0.3;
         document.getElementById('ply_k1').value = 0.65;
         document.getElementById('ply_g19').value = 1.0;
         calculate();
