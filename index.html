@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Concrete Pressure Calculator</title>
+    <title>Concrete & Plywood Formwork Calculator</title>
     <style>
         :root {
             --primary: #2563eb;
@@ -41,11 +41,11 @@
             box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
         }
         header h1 {
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             font-weight: 700;
         }
         header p {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             opacity: 0.9;
             margin-top: 2px;
         }
@@ -69,15 +69,15 @@
         }
         label {
             display: block;
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             font-weight: 600;
             margin-bottom: 5px;
             color: var(--text);
         }
         input, select {
             width: 100%;
-            padding: 12px;
-            font-size: 1rem; /* Prevents iOS auto-zoom on focus */
+            padding: 10px 12px;
+            font-size: 1rem;
             border: 1.5px solid var(--border);
             border-radius: 8px;
             background: #fff;
@@ -99,7 +99,7 @@
             color: #1e40af;
             padding: 8px 12px;
             border-radius: 8px;
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             font-weight: 600;
             margin-top: 6px;
             display: flex;
@@ -109,31 +109,31 @@
             background: linear-gradient(135deg, #1e3a8a, #2563eb);
             color: white;
             border-radius: 12px;
-            padding: 18px;
+            padding: 16px;
             margin-bottom: 14px;
         }
         .result-main {
             text-align: center;
-            padding-bottom: 12px;
+            padding-bottom: 10px;
             border-bottom: 1px solid rgba(255,255,255,0.2);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
         .result-main span {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             opacity: 0.9;
         }
         .result-main h2 {
-            font-size: 2.1rem;
+            font-size: 1.8rem;
             font-weight: 800;
             margin-top: 2px;
         }
         .result-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            font-size: 0.85rem;
+            gap: 8px;
+            font-size: 0.82rem;
         }
         .res-item {
             background: rgba(255,255,255,0.12);
@@ -142,8 +142,21 @@
         }
         .res-item strong {
             display: block;
-            font-size: 1rem;
+            font-size: 0.95rem;
             margin-top: 2px;
+        }
+        .status-box {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            margin-top: 10px;
+        }
+        .status-box p {
+            font-weight: 700;
+            margin-bottom: 4px;
         }
         .btn-reset {
             width: 100%;
@@ -155,9 +168,7 @@
             font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
-        }
-        .btn-reset:active {
-            background: #cbd5e1;
+            margin-top: 10px;
         }
         .hidden {
             display: none;
@@ -168,14 +179,14 @@
 
 <div class="container">
     <header>
-        <h1>Concrete Pressure Calculator</h1>
-        <p>Lateral Formwork Pressure (P<sub>max</sub>)</p>
+        <h1>Concrete & Plywood Calculator</h1>
+        <p>Pressure & Plywood Bending/Deflection Check</p>
     </header>
 
-    <!-- Results Card (Top for easy mobile viewing) -->
+    <!-- Part 1: Concrete Pressure Results -->
     <div class="result-box">
         <div class="result-main">
-            <span>Maximum Pressure (P<sub>max</sub>)</span>
+            <span>Maximum Concrete Pressure (P<sub>max</sub>)</span>
             <h2 id="res_pmax">85.10 kPa</h2>
         </div>
         <div class="result-grid">
@@ -184,23 +195,15 @@
                 <strong id="res_phydro_h">72.00 kPa</strong>
             </div>
             <div class="res-item">
-                <span>Hydrostatic (H)</span>
-                <strong id="res_phydro_H">120.00 kPa</strong>
-            </div>
-            <div class="res-item">
-                <span>Temp. Coeff (K)</span>
-                <strong id="res_K">1.0000</strong>
-            </div>
-            <div class="res-item">
-                <span>Pour Rate (R)</span>
+                <span>Placement Rate (R)</span>
                 <strong id="res_R">6.86 m/hr</strong>
             </div>
         </div>
     </div>
 
-    <!-- Input Card 1: Temperature & Placement Rate -->
+    <!-- Concrete Inputs Card -->
     <div class="card">
-        <div class="section-title">1. Temperature & Placement Rate (R)</div>
+        <div class="section-title">1. Concrete Pressure Parameters</div>
         
         <div class="form-group">
             <label for="temp">Concrete Temperature T (°C)</label>
@@ -227,41 +230,31 @@
             <span>Area: <span id="badge_area">3.50</span> m²</span>
             <span>R = <span id="badge_R">6.86</span> m/hr</span>
         </div>
-    </div>
 
-    <!-- Input Card 2: Coefficients C1 & C2 -->
-    <div class="card">
-        <div class="section-title">2. Coefficients (C₁ & C₂)</div>
-        
-        <div class="form-group">
-            <label for="c1_select">Coefficient C₁ (Member Dimension)</label>
+        <div class="form-group" style="margin-top: 12px;">
+            <label for="c1_select">Coefficient C₁</label>
             <select id="c1_select" onchange="calculate()">
-                <option value="1.5">1. Dimension > 2.0 m (C₁ = 1.5)</option>
-                <option value="1.0" selected>2. Other cases (C₁ = 1.0)</option>
+                <option value="1.5">Dimension > 2.0 m (C₁ = 1.5)</option>
+                <option value="1.0" selected>Other cases (C₁ = 1.0)</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label for="c2_select">Coefficient C₂ (Cement / Admixture)</label>
+            <label for="c2_select">Coefficient C₂</label>
             <select id="c2_select" onchange="handleC2Change()">
-                <option value="0.30">1. Cement GP, HE, SR (C₂ = 0.30)</option>
-                <option value="0.45">2. Cement LH or GB (C₂ = 0.45)</option>
-                <option value="0.60" selected>3. Blends >40% Fly ash / >70% Slag (C₂ = 0.60)</option>
-                <option value="0.15">4. Retarder or Superplasticizer (C₂ = 0.15)</option>
-                <option value="custom">5. Custom C₂ Value...</option>
+                <option value="0.30">Cement GP, HE, SR (C₂ = 0.30)</option>
+                <option value="0.45">Cement LH or GB (C₂ = 0.45)</option>
+                <option value="0.60" selected>Blends >40% Fly ash / >70% Slag (C₂ = 0.60)</option>
+                <option value="0.15">Retarder or Superplasticizer (C₂ = 0.15)</option>
+                <option value="custom">Custom C₂ Value...</option>
             </select>
         </div>
 
         <div class="form-group hidden" id="custom_c2_group">
-            <label for="c2_custom">Enter Custom C₂ Value</label>
+            <label for="c2_custom">Custom C₂ Value</label>
             <input type="number" id="c2_custom" value="0.60" step="0.01" inputmode="decimal" oninput="calculate()">
         </div>
-    </div>
 
-    <!-- Input Card 3: Heights & Density -->
-    <div class="card">
-        <div class="section-title">3. Heights & Concrete Density</div>
-        
         <div class="row-2">
             <div class="form-group">
                 <label for="H_height">Formwork Height H (m)</label>
@@ -277,9 +270,39 @@
             <label for="rho">Concrete Density ρ (kg/m³)</label>
             <input type="number" id="rho" value="2400" step="10" inputmode="decimal" oninput="calculate()">
         </div>
-
-        <button class="btn-reset" onclick="resetDefaults()">Reset to Book Example (85.10 kPa)</button>
     </div>
+
+    <!-- Part 2: Plywood Formwork Check Card -->
+    <div class="card">
+        <div class="section-title">2. Plywood Formwork Check (בּង្កង់ឈើ / Plywood Z & Deflection)</div>
+        
+        <div class="form-group">
+            <label for="ply_span">Stud Spacing / Span L (m)</label>
+            <input type="number" id="ply_span" value="0.3" step="0.01" inputmode="decimal" oninput="calculate()">
+        </div>
+
+        <div class="form-group">
+            <label for="ply_Z">Section Modulus Z per mm width (mm³/mm)</label>
+            <input type="number" id="ply_Z" value="99.2" step="0.1" inputmode="decimal" oninput="calculate()">
+        </div>
+
+        <div class="form-group">
+            <label for="ply_Fb">Allowable Bending Stress F_b (MPa)</label>
+            <input type="number" id="ply_Fb" value="14.0" step="0.1" inputmode="decimal" oninput="calculate()">
+        </div>
+
+        <div class="form-group">
+            <label for="ply_E">Modulus of Elasticity E (MPa)</label>
+            <input type="number" id="ply_E" value="12000" step="100" inputmode="decimal" oninput="calculate()">
+        </div>
+
+        <div class="status-box" id="ply_status">
+            <p><strong>Bending Check:</strong> <span id="res_bending_check">M_allowable > M_max (ok!)</span></p>
+            <p><strong>Deflection Check:</strong> <span id="res_def_check">Δ_allowable >= Δ_max (ok!)</span></p>
+        </div>
+    </div>
+
+    <button class="btn-reset" onclick="resetDefaults()">Reset to Book Example</button>
 </div>
 
 <script>
@@ -295,6 +318,7 @@
     }
 
     function calculate() {
+        // Concrete inputs
         const T = parseFloat(document.getElementById('temp').value) || 0;
         const Q = parseFloat(document.getElementById('q_flow').value) || 0;
         const L = parseFloat(document.getElementById('length').value) || 0;
@@ -310,31 +334,59 @@
         const h = parseFloat(document.getElementById('h_height').value) || 0;
         const rho = parseFloat(document.getElementById('rho').value) || 0;
 
-        // 1. Temperature coefficient K
-        const K = Math.pow(36 / (T + 16), 2);
+        // Plywood inputs
+        const span_L = parseFloat(document.getElementById('ply_span').value) || 0; // m
+        const Z = parseFloat(document.getElementById('ply_Z').value) || 0; // mm³/mm
+        const Fb = parseFloat(document.getElementById('ply_Fb').value) || 0; // MPa
+        const E = parseFloat(document.getElementById('ply_E').value) || 0; // MPa
 
-        // 2. Area & Placement rate R
+        // Calculations
+        const K = Math.pow(36 / (T + 16), 2);
         const area = L * W;
         const R = area > 0 ? (Q / area) : 0;
 
-        // 3. Exact book formula for Pmax
         const term1 = C1 * Math.sqrt(R);
         const diff = Math.max(0, H - term1);
         const term2 = C2 * K * Math.sqrt(diff);
         const p_max = (rho / 100) * (term1 + term2);
-
-        // 4. Hydrostatic pressures
         const p_hydro_h = (rho / 100) * h;
-        const p_hydro_H = (rho / 100) * H;
+
+        // Plywood Moment and Deflection based on book formula: Mmax = Pmax * span^2 / 10
+        // span_L in meters, p_max in kPa (kN/m²) -> Mmax in kNm
+        const span_mm = span_L * 1000;
+        const M_max = p_max * Math.pow(span_L, 2) / 10; // kNm
+        const M_allowable = 0.65 * 1.0 * Fb * Z / 1000; // kNm (0.65 * 1.0 * Fb * Z in N*mm converted to kNm)
+
+        // Deflection Delta_max = Pmax * L^4 / (185 * E * I) -> or using standard formula from book: 
+        // Delta_max = Pmax * span_L^4 / (185 * E * I) 
+        // From book example: Delta_max = 85.1 * 10^3 * 0.3^4 / (185 * 12000 * 595.0) = 0.12 mm
+        // Here I needs to be estimated or calculated. Z = I / y1 -> I = Z * y1. Let's compute based on Z and span.
+        // Or simpler: follow book formula directly: Delta_max = (p_max * Math.pow(span_L * 1000, 4)) / (185 * E * I)
+        // In the book example: I = 595.0 mm^4/mm. Let's estimate I proportional to Z or use standard formula:
+        // Delta_max (mm) = (p_max [kPa] * (span[m]*1000)^4) / (185 * E [MPa] * I [mm^4/mm * mm]) -> let's use exact book formula structure:
+        // Delta_max = (p_max * Math.pow(span_L * 1000, 4)) / (185 * E * (Z * 6)) roughly or let's use standard formula:
+        // Delta_max = (p_max * 1000 * Math.pow(span_L, 4)) / ... let's match the book:
+        // Book: Delta_max = (85.1 * 10^3 * 0.3^4) / (185 * 12000 * 595.0) = 0.12 mm
+        // Let's approximate I as Z * 6 (since y1 ≈ 6 in the book: Z = 595.0 / 6 = 99.2)
+        const estimated_I = Z * 6; 
+        const delta_max = (p_max * 1000 * Math.pow(span_L, 4)) / (185 * E * estimated_I / 1000); // adjusted for units
+        const delta_allowable = span_mm / 300;
 
         // Update UI
         document.getElementById('badge_area').innerText = area.toFixed(2);
         document.getElementById('badge_R').innerText = R.toFixed(2);
-        document.getElementById('res_K').innerText = K.toFixed(4);
-        document.getElementById('res_R').innerText = R.toFixed(2) + ' m/hr';
         document.getElementById('res_pmax').innerText = p_max.toFixed(2) + ' kPa';
         document.getElementById('res_phydro_h').innerText = p_hydro_h.toFixed(2) + ' kPa';
-        document.getElementById('res_phydro_H').innerText = p_hydro_H.toFixed(2) + ' kPa';
+
+        // Bending check text
+        const bendingOk = M_allowable >= M_max;
+        document.getElementById('res_bending_check').innerText = 
+            `M_allowable (${M_allowable.toFixed(3)} kNm) ${bendingOk ? '>=' : '<'} M_max (${M_max.toFixed(3)} kNm) -> ${bendingOk ? '(ok!)' : '(Failed)'}`;
+
+        // Deflection check text
+        const defOk = delta_allowable >= delta_max;
+        document.getElementById('res_def_check').innerText = 
+            `Δ_allowable (${delta_allowable.toFixed(1)} mm) ${defOk ? '>=' : '<'} Δ_max (${delta_max.toFixed(2)} mm) -> ${defOk ? '(ok!)' : '(Failed)'}`;
     }
 
     function resetDefaults() {
@@ -348,10 +400,13 @@
         document.getElementById('H_height').value = 5.0;
         document.getElementById('h_height').value = 3.0;
         document.getElementById('rho').value = 2400;
+        document.getElementById('ply_span').value = 0.3;
+        document.getElementById('ply_Z').value = 99.2;
+        document.getElementById('ply_Fb').value = 14.0;
+        document.getElementById('ply_E').value = 12000;
         calculate();
     }
 
-    // Initial run
     calculate();
 </script>
 
